@@ -1,18 +1,24 @@
-import contactsService from "../services/contactsServices.js";
-import HttpError from "../helpers/HttpError";
+import {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContactById,
+} from "../services/contactsServices.js";
+import HttpError from "../helpers/HttpError.js";
 
 export const getAllContacts = async (req, res) => {
-  const result = await contactsService.listContacts();
+  const result = await listContacts();
 
-  res.status(200).json(result); // перевірити як працює статус
+  res.json(result);
 };
 
 export const getOneContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.getContactById(id);
+  const result = await getContactById(id);
 
   if (!result) {
-      throw HttpError(404); // перевірити чи працює меседж
+    throw HttpError(404, "Not found");
   }
 
   res.status(200).json(result);
@@ -20,32 +26,28 @@ export const getOneContact = async (req, res) => {
 
 export const deleteContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.removeContact(id);
+  const result = await removeContact(id);
 
   if (!result) {
-    throw HttpError(404);
+    throw HttpError(404, "Not found");
   }
     
   res.status(200).json(result);
 };
 
 export const createContact = async (req, res) => {
-  const result = await contactsService.addContact(req.body);
+  const result = await addContact(req.body);
 
-  // if (!result) {             // перевірити чи потрібно, бо код, що відпрацьовує помилку 
-  //   throw HttpError(400)     // у helpers -> validateBody.js, застосований у routes
-  // };
-
-  res.status(201).json(result); 
+  res.status(201).json(result);
 };
 
-export const updateContact = async (req, res) => { 
+export const updateContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.updateContact(id, req.body);
+  const result = await updateContactById(id, req.body);
 
-  // if (!result) {
-  //   throw HttpError(400, "Body must have at least one field")
-  // };
+  if (!result) {
+    throw HttpError(400, "Body must have at least one field")
+  };
 
   res.status(200).json(result);
 };
