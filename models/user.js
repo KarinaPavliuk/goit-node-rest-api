@@ -25,7 +25,7 @@ const userSchema = new Schema({
   },
   token: {
     type: String,
-    default: null,
+    default: "",
   }
 }, { versionKey: false, timestamps: true });
 
@@ -35,7 +35,6 @@ const registerSchema = Joi.object({
   password: Joi.string().min(6).required(),
   email: Joi.string().pattern(emailRegexp).required(),
   subscription: Joi.string(),
-  token: Joi.string()
 });
 
 const loginSchema = Joi.object({
@@ -50,4 +49,4 @@ const schemas = {
 
 const User = model("user", userSchema);
 
-export { User, schemas }
+export { User, schemas };
