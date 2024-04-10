@@ -1,4 +1,4 @@
-import contactsService from "../services/contactsServices.js";
+import contactsService from "../models/user.js";
 
 export const getAllContacts = (req, res) => {};
 
