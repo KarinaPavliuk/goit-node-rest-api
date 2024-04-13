@@ -3,6 +3,8 @@ import morgan from "morgan";
 import cors from "cors";
 import multer from "multer";
 import path from "path";
+import fs from "fs/promises";
+import { nanoid } from "nanoid";
 import contactsRouter from "./routes/contactsRouter.js";
 
 const app = express();
@@ -10,9 +12,9 @@ const app = express();
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 const tempDir = path.join(process.cwd(), "temp");
-const contactsPath = path.join(process.cwd(), "./db/contacts.json");
 
 const multerConfig = multer.diskStorage({
   destination: tempDir,
@@ -25,14 +27,31 @@ const upload = multer({
   storage: multerConfig,
 })
 
+const contacts = [];
+
 // app.use("/api/contacts", contactsRouter);
 app.get("/api/contacts", (req, res) => {
-  res.json(contactsPath)
+  res.json(contacts)
 })
 
+const contactsDir = path.join(process.cwd(), "public", "contacts")
+
+// upload.fields([{name: "photo", maxCount: 1}, {name: "subphoto", maxCount: 2}]) - якщо потрібно отримати файли з декількох полів, створюється масив об'єктів, name значення - це назва поля в якому має бути файл, maxCount - максимальна кільк файлів, яку ми очікуємо
+// upload.array("photo", 8); - якщо передається масив файлів, і вказується максимальна кільк ел масиву
 app.post("/api/contacts", upload.single("photo"), async (req, res) => {
-  console.log(req.body);
-  console.log(req.file);
+  const { path: tempUpload, originalname } = req.file;
+  const resultUpload = path.join(contactsDir, originalname);
+  await fs.rename(tempUpload, resultUpload);
+
+  const photo = path.join("contacts", originalname);
+  const newContact = {
+    id: nanoid(),
+    ...req.body,
+    photo,
+  };
+  contacts.push(newContact);
+
+  res.status(201).json(newContact);
 })
 
 app.use((_, res) => {
