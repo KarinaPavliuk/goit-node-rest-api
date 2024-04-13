@@ -7,7 +7,7 @@ import {
   updateContact,
   updateFavorite
 } from "../controllers/contactsControllers.js";
-import { ctrlWrapper } from "../helpers/ctrlWrapper.js";
+import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import validateBody from "../helpers/validateBody.js";
 import isValidId from "../middlewares/isValidId.js";
 import { schemas } from "../models/contact.js";

@@ -2,9 +2,6 @@ import express from "express";
 import logger from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
-import multer from "multer";
-import path from "path";
-
 import authRouter from "./routes/authRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
 
@@ -17,21 +14,9 @@ const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
-const tempDir = path.join(process.cwd(), "temp");
-
-const multerConfig = multer.diskStorage({
-  destination: tempDir,
-  // filename: (req, file, cb) => {
-  //   cb(null, file.originalname);
-  // }
-})
-
-const upload = multer({
-  storage: multerConfig,
-})
-
-app.use("/api/auth", upload.single("photo"), authRouter)
+app.use("/api/auth", authRouter)
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res) => {
@@ -43,4 +28,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-export { app, upload };
+export default app;

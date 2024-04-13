@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import Joi from "joi";
 
-import { handleMongooseError } from "../middlewares/handleMongooseError.js";
+import handleMongooseError from "../middlewares/handleMongooseError.js";
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -23,11 +23,14 @@ const userSchema = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter"
   },
-  avatarURL: String,
   token: {
     type: String,
     default: "",
-  }
+  },
+  avatarURL: {
+    type: String,
+    required: true,
+  },
 }, { versionKey: false, timestamps: true });
 
 userSchema.post("save", handleMongooseError);
@@ -36,7 +39,6 @@ const registerSchema = Joi.object({
   password: Joi.string().min(6).required(),
   email: Joi.string().pattern(emailRegexp).required(),
   subscription: Joi.string(),
-  avatarURL: Joi.string(),
 });
 
 const loginSchema = Joi.object({

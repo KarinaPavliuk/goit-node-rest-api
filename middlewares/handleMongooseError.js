@@ -6,4 +6,4 @@ const handleMongooseError = (error, data, next) => {
   next()
 };
 
-export {handleMongooseError};
+export default handleMongooseError;
