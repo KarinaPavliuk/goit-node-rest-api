@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import path from "path";
 import fs from "fs/promises";
+import Jimp from "jimp";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -21,7 +22,18 @@ export const register = async (req, res) => {
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
-  const avatarURL = gravatar.url(email);
+  const avatarURL = gravatar.url(email, { protocol: 'https', s: '250' });
+
+  Jimp.read(avatarURL)
+  .then((image) => {
+    return image.resize(250, 250).writeAsync(`public/avatars/${email}.jpg`);
+  })
+  .then(() => {
+    console.log('Avatar resized and saved successfully');
+  })
+  .catch((err) => {
+    console.error('Error resizing or saving avatar:', err);
+  });
 
   const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL});
 
@@ -49,7 +61,7 @@ export const login = async (req, res) => {
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
   await User.findByIdAndUpdate(user._id, {token});
 
-  res.json({
+  res.status(200).json({
     token,
   });
 }
@@ -72,13 +84,25 @@ export const updateAvatar = async (req, res) => {
   const { _id } = req.user;
   const { path: tempUpload, originalname } = req.file;
   const filename = `${_id}_${originalname}`;
+
   const resultUpload = path.join(avatarsDir, filename);
   await fs.rename(tempUpload, resultUpload);
+
+  await Jimp.read(resultUpload)
+    .then((image) => {
+      return image.resize(250, 250).writeAsync(`${avatarsDir}/${filename}`);
+    })
+    .then(() => {
+      console.log('Avatar resized and saved successfully');
+    })
+    .catch((err) => {
+      console.error('Error resizing or saving avatar:', err);
+    });
 
   const avatarURL = path.join("avatars", filename);
   await User.findByIdAndUpdate(_id, { avatarURL });
 
-  res.json({
+  res.status(200).json({
     avatarURL,
   });
 }
